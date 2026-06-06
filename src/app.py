@@ -847,28 +847,13 @@ HTML_TEMPLATE = """
 
             /* Keep the inline "Ask AI Advisor" button visible inside the detail panel — user requested */
             .chat-toggle-btn { padding: 0.85rem; 
-            /* Inline chat: make input sticky so iOS keyboard never covers it */
-            .chat-section.open .chat-input-bar {
-                position: sticky;
-                bottom: 0;
-                background: var(--card);
-                padding: 0.5rem 0;
-                z-index: 3;
-                border-top: 1px solid var(--border);
-                margin-top: 0.5rem;
-            }
-            .chat-input-bar input[type="text"] {
-                font-size: 16px;  /* iOS won't zoom in */
-                min-height: 42px;
-                padding: 0.6rem 0.8rem;
-            }
-            .chat-input-bar button {
-                min-height: 42px;
-                min-width: 64px;
-                font-size: 0.9rem;
-            }
-            /* Hide floating FAB while the inline chat is open (avoid overlap) */
-            body:has(.chat-section.open) .mobile-chat-fab { display: none !important; }
+            /* Inline chat-section is replaced by the bottom-sheet panel on mobile */
+            .chat-section, .chat-section.open { display: none !important; }
+            /* Iframe-safe: 16px input font-size prevents iOS auto-zoom in the panel too */
+            .mobile-chat-panel .mc-input input { font-size: 16px; min-height: 42px; }
+            .mobile-chat-panel .mc-input button { min-height: 42px; min-width: 64px; }
+            /* While the mobile chat panel is up, hide the FAB so it doesn\'t cover the input */
+            body:has(.mobile-chat-panel.open) .mobile-chat-fab { display: none !important; }
         }
 
         /* ── Responsive: small mobile ── */
@@ -957,7 +942,14 @@ HTML_TEMPLATE = """
         .mobile-chat-panel {
             display: none;
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            /* Dynamic viewport height so iOS keyboard shrinks the panel
+               instead of pushing the input below the keyboard. */
+            height: 100vh;
+            height: 100dvh;
             z-index: 220;
             background: var(--bg);
             flex-direction: column;
@@ -1988,6 +1980,18 @@ HTML_TEMPLATE = """
     let chatHistory = [];
 
     function toggleChat(addr) {
+        // On mobile, the inline chat doesn't play nicely with the iOS
+        // keyboard. Route to the floating bottom-sheet instead, with the
+        // analysed address pre-loaded.
+        if (window.matchMedia('(max-width: 700px)').matches) {
+            chatAddress = addr;
+            chatHistory = [];
+            const mobileMsgs = document.getElementById('mobileChatMessages');
+            if (mobileMsgs) mobileMsgs.innerHTML = '';
+            openMobileChat();
+            return;
+        }
+
         const section = document.getElementById('chatSection');
         if (!section) return;
 
@@ -2001,13 +2005,7 @@ HTML_TEMPLATE = """
         section.classList.toggle('open');
         if (section.classList.contains('open')) {
             const inp = document.getElementById('chatInput');
-            if (inp) {
-                inp.focus();
-                // On mobile, make sure the input is in view above the keyboard
-                setTimeout(function(){
-                    try { inp.scrollIntoView({block: 'center', behavior: 'smooth'}); } catch(e) {}
-                }, 350);
-            }
+            if (inp) inp.focus();
         }
     }
 
