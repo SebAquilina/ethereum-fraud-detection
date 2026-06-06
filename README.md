@@ -1,5 +1,5 @@
 ---
-title: Ethereum Fraud Detection
+title: AI Model for Fraud Detection in Blockchain Transactions
 emoji: 🛡️
 colorFrom: blue
 colorTo: purple
@@ -9,7 +9,7 @@ pinned: false
 license: mit
 ---
 
-# Ethereum Fraud Detection
+# AI Model for Fraud Detection in Blockchain Transactions
 
 A web app that scores Ethereum addresses for fraud risk. Give it an address and it
 pulls the address's transaction history from Etherscan, builds a feature vector, and

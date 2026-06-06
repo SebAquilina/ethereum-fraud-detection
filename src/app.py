@@ -110,7 +110,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ethereum Fraud Detection &mdash; B.Eng. Thesis</title>
+    <title>AI Model for Fraud Detection in Blockchain Transactions</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -835,7 +835,7 @@ HTML_TEMPLATE = """
     </div>
 
     <div class="container">
-        <h1 class="page-title">Ethereum Fraud Detection System</h1>
+        <h1 class="page-title">AI Model for Fraud Detection in Blockchain Transactions</h1>
         <p class="page-subtitle">
             Live transaction analysis using a 3-model ensemble (XGBoost + Random Forest + Isolation Forest).
             Enter an Ethereum address to classify its fraud risk, or monitor the live blockchain stream below.
