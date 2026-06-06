@@ -2062,7 +2062,7 @@ HTML_TEMPLATE = """
 
         let addr = (inp.value || '').trim();
         if (!/^0x[a-fA-F0-9]{40}$/.test(addr)) {
-            messages.innerHTML = '<div class="chat-bubble ai" style="color:var(--danger);">That doesn\'t look like a valid Ethereum address. It should start with <strong>0x</strong> and be 42 characters long.</div>';
+            messages.innerHTML = '<div class="chat-bubble ai" style="color:var(--danger);">That doesn\\'t look like a valid Ethereum address. It should start with <strong>0x</strong> and be 42 characters long.</div>';
             return;
         }
 
