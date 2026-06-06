@@ -1181,10 +1181,10 @@ HTML_TEMPLATE = """
         <div class="mc-addr-picker" id="mcAddrPicker" style="display:none;">
             <p class="mc-addr-blurb">Paste an Ethereum address and I'll analyse it, then answer your questions about it.</p>
             <input id="mcAddrInput" type="text" placeholder="0x… (Ethereum address)" autocomplete="off"
-                   onkeydown="if(event.key===\'Enter\')mcAnalyseAndChat()">
+                   onkeydown="if(event.key==='Enter')mcAnalyseAndChat()">
             <button onclick="mcAnalyseAndChat()" id="mcAnalyseBtn">Analyse &amp; chat</button>
-            <p class="mc-addr-hint">Try Vitalik\'s wallet:
-                <a href="#" onclick="document.getElementById(\'mcAddrInput\').value=\'0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045\';return false;">
+            <p class="mc-addr-hint">Try Vitalik's wallet:
+                <a href="#" onclick="document.getElementById('mcAddrInput').value='0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045';return false;">
                     0xd8dA…6045
                 </a>
             </p>
@@ -1193,7 +1193,7 @@ HTML_TEMPLATE = """
         <div class="mc-body" id="mobileChatMessages"></div>
         <div class="mc-input" id="mcInputBar">
             <input id="mobileChatInput" type="text" placeholder="Ask about this analysis…"
-                   onkeydown="if(event.key===\'Enter\')sendMobileChat()">
+                   onkeydown="if(event.key==='Enter')sendMobileChat()">
             <button onclick="sendMobileChat()">Send</button>
         </div>
     </div>
