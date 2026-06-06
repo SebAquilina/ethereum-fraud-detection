@@ -795,28 +795,175 @@ HTML_TEMPLATE = """
 
         @media (max-width: 700px) {
             .search-form { flex-direction: column; }
-            .stats-grid { grid-template-columns: 1fr; }
-            .container { padding: 1.5rem 1rem 2rem; }
-            .page-title { font-size: 1.35rem; }
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+            .container { padding: 1.25rem 1rem 4.5rem; }
+            .page-title { font-size: 1.35rem; line-height: 1.25; }
+            .page-subtitle { font-size: 0.85rem; margin-bottom: 1.25rem; }
             .detail-panel { width: 100%; right: -100%; }
             .list-panel { width: 100%; left: -100%; }
             .feed-header, .tx-row {
-                grid-template-columns: 1fr 65px 65px 70px;
+                grid-template-columns: 1.4fr 60px 60px;
+                font-size: 0.78rem;
+                gap: 0.4rem;
+                padding: 0.55rem 0.75rem;
             }
             .feed-header > :last-child, .tx-row > :last-child { display: none; }
+            .tx-row .addr { font-family: 'JetBrains Mono', monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .stream-header { flex-wrap: wrap; gap: 0.5rem; }
+            .card { padding: 1.1rem; }
+            /* Hide the inline "Ask AI Advisor" button — replaced by a floating FAB on mobile */
+            .chat-toggle-btn { display: none !important; }
+            .chat-section { display: none !important; }
+            /* Show the floating Gemini assistant */
+            .mobile-chat-fab { display: flex !important; }
         }
 
         /* ── Responsive: small mobile ── */
         @media (max-width: 480px) {
-            .container { padding: 1rem 0.75rem 1.5rem; }
-            .page-title { font-size: 1.15rem; }
-            .page-subtitle { font-size: 0.85rem; }
+            .container { padding: 0.85rem 0.65rem 4.5rem; }
+            .page-title { font-size: 1.1rem; }
+            .page-subtitle { font-size: 0.8rem; margin-bottom: 1rem; }
             .probability { font-size: 1.85rem; }
-            .stat-box { min-width: calc(50% - 0.5rem); }
-            .stat-box .value { font-size: 1rem; }
-            .uni-header { padding: 0.5rem 0.75rem; font-size: 0.75rem; flex-wrap: wrap; }
-            .card { padding: 1.25rem; }
-            .toast-container { left: 0.75rem; right: 0.75rem; max-width: none; }
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.4rem;
+            }
+            .stat-box { padding: 0.55rem 0.6rem; min-width: 0; }
+            .stat-box .label { font-size: 0.62rem; }
+            .stat-box .value { font-size: 0.95rem; }
+            .uni-header {
+                padding: 0.55rem 0.75rem;
+                font-size: 0.72rem;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+            .uni-header .divider { height: 0.95rem; }
+            /* Toggle buttons in header collapse to icon-only on tiny screens */
+            #modeToggle, #themeToggle {
+                padding: 0.3rem 0.5rem !important;
+                font-size: 0.7rem !important;
+                gap: 0.2rem !important;
+            }
+            #modeLabel, #themeLabel { display: none; }
+            .card { padding: 1rem; }
+            .toast-container { left: 0.5rem; right: 0.5rem; max-width: none; bottom: 5rem; }
+            .feed-header, .tx-row {
+                grid-template-columns: 1.4fr 55px 55px;
+                font-size: 0.72rem;
+                padding: 0.5rem 0.65rem;
+            }
+        }
+
+        /* ════════════════════════════════════════════════════════════
+           Floating Gemini AI Assistant (mobile-only)
+           ════════════════════════════════════════════════════════════ */
+        .mobile-chat-fab {
+            display: none;
+            position: fixed;
+            bottom: 1.1rem;
+            right: 1.1rem;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #7c1421);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.35), 0 0 0 4px rgba(177,32,46,0.15);
+            z-index: 180;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s;
+        }
+        .mobile-chat-fab:active { transform: scale(0.92); }
+        .mobile-chat-fab .fab-dot {
+            position: absolute;
+            top: 6px; right: 6px;
+            width: 10px; height: 10px;
+            background: #22c55e;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+        }
+        .mobile-chat-panel {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 220;
+            background: var(--bg);
+            flex-direction: column;
+        }
+        .mobile-chat-panel.open { display: flex; }
+        .mobile-chat-panel .mc-head {
+            background: var(--accent);
+            color: white;
+            padding: 0.85rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .mobile-chat-panel .mc-head .mc-title { flex: 1; }
+        .mobile-chat-panel .mc-head button {
+            background: rgba(255,255,255,0.18);
+            border: none;
+            color: white;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mobile-chat-panel .mc-context {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 0.55rem 1rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .mobile-chat-panel .mc-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+        }
+        .mobile-chat-panel .mc-input {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border-top: 1px solid var(--border);
+            background: var(--card);
+        }
+        .mobile-chat-panel .mc-input input {
+            flex: 1;
+            padding: 0.7rem 0.85rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .mobile-chat-panel .mc-input button {
+            padding: 0.7rem 1.1rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -945,6 +1092,26 @@ HTML_TEMPLATE = """
         </div>
     </div>
 
+    
+    <!-- ════════════════ Mobile-only Gemini Assistant FAB ════════════════ -->
+    <button class="mobile-chat-fab" id="mobileChatFab" onclick="openMobileChat()" aria-label="Open AI Assistant" title="Ask AI Advisor">
+        &#129302;<span class="fab-dot"></span>
+    </button>
+
+    <div class="mobile-chat-panel" id="mobileChatPanel" role="dialog" aria-label="AI Advisor chat">
+        <div class="mc-head">
+            <span>&#129302;</span>
+            <span class="mc-title">AI Advisor</span>
+            <button onclick="closeMobileChat()" aria-label="Close">&times;</button>
+        </div>
+        <div class="mc-context" id="mcContext">No address analysed yet</div>
+        <div class="mc-body" id="mobileChatMessages"></div>
+        <div class="mc-input">
+            <input id="mobileChatInput" type="text" placeholder="Ask about this analysis…"
+                   onkeydown="if(event.key==='Enter')sendMobileChat()">
+            <button onclick="sendMobileChat()">Send</button>
+        </div>
+    </div>
     <!-- ── Toast notifications ── -->
     <div class="toast-container" id="toastContainer"></div>
 
@@ -1769,6 +1936,73 @@ HTML_TEMPLATE = """
         }
         messages.scrollTop = messages.scrollHeight;
     }
+
+    /* ════════════════════════════════════════════════════════════
+       Mobile-only AI Advisor (floating FAB + bottom-sheet chat)
+       Reuses chatAddress / chatHistory from the desktop chat above.
+       ════════════════════════════════════════════════════════════ */
+    function openMobileChat() {
+        const panel = document.getElementById('mobileChatPanel');
+        const messages = document.getElementById('mobileChatMessages');
+        const ctx = document.getElementById('mcContext');
+        if (!panel) return;
+
+        if (chatAddress) {
+            ctx.textContent = 'About: ' + chatAddress;
+            if (!messages.innerHTML.trim()) {
+                messages.innerHTML = '<div class="chat-bubble ai">Hello! I can help you understand why this address was flagged. What would you like to know?</div>';
+            }
+        } else {
+            ctx.textContent = 'No address analysed yet';
+            messages.innerHTML = '<div class="chat-bubble ai">Search and analyse an Ethereum address first \u2014 then come back here to ask the AI about the result.</div>';
+        }
+        panel.classList.add('open');
+        setTimeout(function(){ document.getElementById('mobileChatInput')?.focus(); }, 50);
+    }
+
+    function closeMobileChat() {
+        document.getElementById('mobileChatPanel')?.classList.remove('open');
+    }
+
+    async function sendMobileChat() {
+        const input = document.getElementById('mobileChatInput');
+        const messages = document.getElementById('mobileChatMessages');
+        const msg = input.value.trim();
+        if (!msg) return;
+        if (!chatAddress) {
+            messages.innerHTML += '<div class="chat-bubble ai" style="color:var(--danger);">Analyse an address first so I have something to discuss.</div>';
+            return;
+        }
+        input.value = '';
+        messages.innerHTML += '<div class="chat-bubble user">' + escapeHtml(msg) + '</div>';
+        messages.scrollTop = messages.scrollHeight;
+
+        const loadId = 'mld-' + Date.now();
+        messages.innerHTML += '<div class="chat-bubble ai" id="' + loadId + '"><em>Thinking\u2026</em></div>';
+        messages.scrollTop = messages.scrollHeight;
+
+        try {
+            const resp = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ address: chatAddress, message: msg, conversation_history: chatHistory })
+            });
+            const data = await resp.json();
+            document.getElementById(loadId)?.remove();
+            if (data.error) {
+                messages.innerHTML += '<div class="chat-bubble ai" style="color:var(--danger);">Error: ' + escapeHtml(data.error) + '</div>';
+            } else {
+                messages.innerHTML += '<div class="chat-bubble ai">' + formatResponse(data.response) + '</div>';
+                chatHistory.push({role: 'user', content: msg});
+                chatHistory.push({role: 'model', content: data.response});
+            }
+        } catch (err) {
+            document.getElementById(loadId)?.remove();
+            messages.innerHTML += '<div class="chat-bubble ai" style="color:var(--danger);">Network error: ' + escapeHtml(err.message) + '</div>';
+        }
+        messages.scrollTop = messages.scrollHeight;
+    }
+
     </script>
 
     <!-- ── Keyboard shortcuts help overlay ── -->
