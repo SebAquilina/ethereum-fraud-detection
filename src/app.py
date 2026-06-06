@@ -794,31 +794,52 @@ HTML_TEMPLATE = """
         }
 
         @media (max-width: 700px) {
+            html, body { overflow-x: hidden; }
             .search-form { flex-direction: column; }
             .stats-grid {
                 grid-template-columns: repeat(3, 1fr);
                 gap: 0.5rem;
             }
-            .container { padding: 1.25rem 1rem 4.5rem; }
+            .container { padding: 1.25rem 1rem 4.5rem; max-width: 100%; }
             .page-title { font-size: 1.35rem; line-height: 1.25; }
             .page-subtitle { font-size: 0.85rem; margin-bottom: 1.25rem; }
-            .detail-panel { width: 100%; right: -100%; }
+
+            /* Detail panel — full width, hide horizontal scroll, scale everything down */
+            .detail-panel { width: 100%; right: -100%; overflow-x: hidden; }
+            .detail-body { padding: 1.1rem 1rem 5rem; }
+            .detail-body * { max-width: 100%; box-sizing: border-box; }
+            .detail-body table { display: block; overflow-x: auto; max-width: 100%; }
+            .detail-addr { font-size: 0.72rem; word-break: break-all; }
+            .feature-bar-label { width: 110px; font-size: 0.68rem; }
+            .feature-bar-val   { min-width: 44px; font-size: 0.68rem; }
+            .tx-context { font-size: 0.72rem; word-break: break-all; }
             .list-panel { width: 100%; left: -100%; }
+
+            /* Address feed — 3 col grid, shrinkable columns, clean ellipsis on address */
             .feed-header, .tx-row {
-                grid-template-columns: 1.4fr 60px 60px;
+                grid-template-columns: minmax(0, 1fr) 60px 60px;
                 font-size: 0.78rem;
                 gap: 0.4rem;
                 padding: 0.55rem 0.75rem;
             }
+            .feed-header > *, .tx-row > * { min-width: 0; }
+            .tx-row .address {
+                font-size: 0.72rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                min-width: 0;
+            }
             .feed-header > :last-child, .tx-row > :last-child { display: none; }
-            .tx-row .addr { font-family: 'JetBrains Mono', monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
             .stream-header { flex-wrap: wrap; gap: 0.5rem; }
-            .card { padding: 1.1rem; }
-            /* Hide the inline "Ask AI Advisor" button — replaced by a floating FAB on mobile */
-            .chat-toggle-btn { display: none !important; }
-            .chat-section { display: none !important; }
+            .card { padding: 1.1rem; max-width: 100%; }
+
             /* Show the floating Gemini assistant */
             .mobile-chat-fab { display: flex !important; }
+
+            /* Keep the inline "Ask AI Advisor" button visible inside the detail panel — user requested */
+            .chat-toggle-btn { padding: 0.85rem; }
         }
 
         /* ── Responsive: small mobile ── */
@@ -848,13 +869,17 @@ HTML_TEMPLATE = """
                 gap: 0.2rem !important;
             }
             #modeLabel, #themeLabel { display: none; }
-            .card { padding: 1rem; }
+            .card { padding: 1rem; max-width: 100%; }
             .toast-container { left: 0.5rem; right: 0.5rem; max-width: none; bottom: 5rem; }
             .feed-header, .tx-row {
-                grid-template-columns: 1.4fr 55px 55px;
+                grid-template-columns: minmax(0, 1fr) 55px 55px;
                 font-size: 0.72rem;
                 padding: 0.5rem 0.65rem;
+                gap: 0.35rem;
             }
+            .tx-row .address { font-size: 0.66rem; }
+            .detail-body { padding: 1rem 0.75rem 5rem; }
+            .feature-bar-label { width: 90px; }
         }
 
         /* ════════════════════════════════════════════════════════════
@@ -939,6 +964,52 @@ HTML_TEMPLATE = """
             flex-direction: column;
             gap: 0.55rem;
         }
+
+        /* Mobile chat: address picker (empty state) */
+        .mc-addr-picker {
+            padding: 1rem;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            display: none;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+        .mc-addr-picker.show { display: flex; }
+        .mc-addr-blurb {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+        .mc-addr-picker input {
+            padding: 0.7rem 0.85rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+        .mc-addr-picker button {
+            padding: 0.75rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .mc-addr-picker button:disabled {
+            opacity: 0.6; cursor: wait;
+        }
+        .mc-addr-hint {
+            margin: 0;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .mc-addr-hint a { color: var(--accent); text-decoration: none; }
+
         .mobile-chat-panel .mc-input {
             display: flex;
             gap: 0.5rem;
@@ -1105,10 +1176,24 @@ HTML_TEMPLATE = """
             <button onclick="closeMobileChat()" aria-label="Close">&times;</button>
         </div>
         <div class="mc-context" id="mcContext">No address analysed yet</div>
+
+        <!-- Empty-state: address picker shown when no analysis exists -->
+        <div class="mc-addr-picker" id="mcAddrPicker" style="display:none;">
+            <p class="mc-addr-blurb">Paste an Ethereum address and I'll analyse it, then answer your questions about it.</p>
+            <input id="mcAddrInput" type="text" placeholder="0x… (Ethereum address)" autocomplete="off"
+                   onkeydown="if(event.key===\'Enter\')mcAnalyseAndChat()">
+            <button onclick="mcAnalyseAndChat()" id="mcAnalyseBtn">Analyse &amp; chat</button>
+            <p class="mc-addr-hint">Try Vitalik\'s wallet:
+                <a href="#" onclick="document.getElementById(\'mcAddrInput\').value=\'0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045\';return false;">
+                    0xd8dA…6045
+                </a>
+            </p>
+        </div>
+
         <div class="mc-body" id="mobileChatMessages"></div>
-        <div class="mc-input">
+        <div class="mc-input" id="mcInputBar">
             <input id="mobileChatInput" type="text" placeholder="Ask about this analysis…"
-                   onkeydown="if(event.key==='Enter')sendMobileChat()">
+                   onkeydown="if(event.key===\'Enter\')sendMobileChat()">
             <button onclick="sendMobileChat()">Send</button>
         </div>
     </div>
@@ -1945,19 +2030,72 @@ HTML_TEMPLATE = """
         const panel = document.getElementById('mobileChatPanel');
         const messages = document.getElementById('mobileChatMessages');
         const ctx = document.getElementById('mcContext');
+        const picker = document.getElementById('mcAddrPicker');
+        const inputBar = document.getElementById('mcInputBar');
         if (!panel) return;
 
         if (chatAddress) {
             ctx.textContent = 'About: ' + chatAddress;
+            picker.classList.remove('show');
+            inputBar.style.display = '';
             if (!messages.innerHTML.trim()) {
                 messages.innerHTML = '<div class="chat-bubble ai">Hello! I can help you understand why this address was flagged. What would you like to know?</div>';
             }
+            setTimeout(function(){ document.getElementById('mobileChatInput')?.focus(); }, 50);
         } else {
-            ctx.textContent = 'No address analysed yet';
-            messages.innerHTML = '<div class="chat-bubble ai">Search and analyse an Ethereum address first \u2014 then come back here to ask the AI about the result.</div>';
+            ctx.textContent = 'Pick an address to analyse';
+            picker.classList.add('show');
+            inputBar.style.display = 'none';
+            messages.innerHTML = '';
+            setTimeout(function(){ document.getElementById('mcAddrInput')?.focus(); }, 50);
         }
         panel.classList.add('open');
-        setTimeout(function(){ document.getElementById('mobileChatInput')?.focus(); }, 50);
+    }
+
+    async function mcAnalyseAndChat() {
+        const inp = document.getElementById('mcAddrInput');
+        const btn = document.getElementById('mcAnalyseBtn');
+        const messages = document.getElementById('mobileChatMessages');
+        const picker = document.getElementById('mcAddrPicker');
+        const inputBar = document.getElementById('mcInputBar');
+        const ctx = document.getElementById('mcContext');
+
+        let addr = (inp.value || '').trim();
+        if (!/^0x[a-fA-F0-9]{40}$/.test(addr)) {
+            messages.innerHTML = '<div class="chat-bubble ai" style="color:var(--danger);">That doesn\'t look like a valid Ethereum address. It should start with <strong>0x</strong> and be 42 characters long.</div>';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Analysing\u2026';
+        messages.innerHTML = '<div class="chat-bubble ai"><em>Pulling transaction history and scoring this address\u2026 this can take 10-30 seconds.</em></div>';
+
+        try {
+            const resp = await fetch('/api/score/' + addr);
+            const data = await resp.json();
+            if (data.error) {
+                messages.innerHTML = '<div class="chat-bubble ai" style="color:var(--danger);">Error: ' + escapeHtml(data.error) + '</div>';
+                return;
+            }
+
+            // Switch into chat mode
+            chatAddress = addr;
+            chatHistory = [];
+            picker.classList.remove('show');
+            inputBar.style.display = '';
+            ctx.textContent = 'About: ' + addr;
+
+            const risk = data.risk_level || 'UNKNOWN';
+            const prob = data.fraud_probability != null ? (data.fraud_probability * 100).toFixed(1) + '%' : '';
+            messages.innerHTML =
+                '<div class="chat-bubble ai">Done. This address scores <strong>' + prob + '</strong> &mdash; risk level <strong>' + escapeHtml(risk) + '</strong>. Ask me anything about why.</div>';
+            setTimeout(function(){ document.getElementById('mobileChatInput')?.focus(); }, 50);
+        } catch (err) {
+            messages.innerHTML = '<div class="chat-bubble ai" style="color:var(--danger);">Network error: ' + escapeHtml(err.message) + '</div>';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Analyse & chat';
+        }
     }
 
     function closeMobileChat() {
