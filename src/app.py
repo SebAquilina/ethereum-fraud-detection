@@ -797,8 +797,15 @@ HTML_TEMPLATE = """
             html, body { overflow-x: hidden; }
             .search-form { flex-direction: column; }
             .stats-grid {
-                grid-template-columns: repeat(3, 1fr);
+                grid-template-columns: repeat(2, 1fr);
                 gap: 0.5rem;
+            }
+            .stat-item { padding: 0.7rem; overflow: hidden; }
+            .stat-value {
+                font-size: 0.95rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
             .container { padding: 1.25rem 1rem 4.5rem; max-width: 100%; }
             .page-title { font-size: 1.35rem; line-height: 1.25; }
@@ -839,7 +846,29 @@ HTML_TEMPLATE = """
             .mobile-chat-fab { display: flex !important; }
 
             /* Keep the inline "Ask AI Advisor" button visible inside the detail panel — user requested */
-            .chat-toggle-btn { padding: 0.85rem; }
+            .chat-toggle-btn { padding: 0.85rem; 
+            /* Inline chat: make input sticky so iOS keyboard never covers it */
+            .chat-section.open .chat-input-bar {
+                position: sticky;
+                bottom: 0;
+                background: var(--card);
+                padding: 0.5rem 0;
+                z-index: 3;
+                border-top: 1px solid var(--border);
+                margin-top: 0.5rem;
+            }
+            .chat-input-bar input[type="text"] {
+                font-size: 16px;  /* iOS won't zoom in */
+                min-height: 42px;
+                padding: 0.6rem 0.8rem;
+            }
+            .chat-input-bar button {
+                min-height: 42px;
+                min-width: 64px;
+                font-size: 0.9rem;
+            }
+            /* Hide floating FAB while the inline chat is open (avoid overlap) */
+            body:has(.chat-section.open) .mobile-chat-fab { display: none !important; }
         }
 
         /* ── Responsive: small mobile ── */
@@ -849,9 +878,12 @@ HTML_TEMPLATE = """
             .page-subtitle { font-size: 0.8rem; margin-bottom: 1rem; }
             .probability { font-size: 1.85rem; }
             .stats-grid {
-                grid-template-columns: repeat(3, 1fr);
+                grid-template-columns: repeat(2, 1fr);
                 gap: 0.4rem;
             }
+            .stat-item { padding: 0.6rem; }
+            .stat-value { font-size: 0.9rem; }
+            .stat-label { font-size: 0.62rem; }
             .stat-box { padding: 0.55rem 0.6rem; min-width: 0; }
             .stat-box .label { font-size: 0.62rem; }
             .stat-box .value { font-size: 0.95rem; }
@@ -880,6 +912,15 @@ HTML_TEMPLATE = """
             .tx-row .address { font-size: 0.66rem; }
             .detail-body { padding: 1rem 0.75rem 5rem; }
             .feature-bar-label { width: 90px; }
+            /* Use abbreviated labels on small phones for the Live Blockchain Stream stats */
+            .stats-bar .stat-box .label[data-mobile] { font-size: 0; line-height: 0; }
+            .stats-bar .stat-box .label[data-mobile]::before {
+                content: attr(data-mobile);
+                font-size: 0.62rem;
+                line-height: 1.2;
+                letter-spacing: 0.04em;
+                display: block;
+            }
         }
 
         /* ════════════════════════════════════════════════════════════
@@ -1129,11 +1170,11 @@ HTML_TEMPLATE = """
             </p>
 
             <div class="stats-bar">
-                <div class="stat-box" role="button" tabindex="0" onclick="openListPanel('summary',this)"><div class="label">Blocks</div><div class="value" id="sBlocks">0</div></div>
-                <div class="stat-box" role="button" tabindex="0" onclick="openListPanel('summary',this)"><div class="label">Transactions</div><div class="value" id="sTxs">0</div></div>
-                <div class="stat-box" role="button" tabindex="0" onclick="openListPanel('scored',this)"><div class="label">Scored</div><div class="value" id="sScored">0</div></div>
-                <div class="stat-box" role="button" tabindex="0" onclick="openListPanel('medium',this)"><div class="label">Medium Risk</div><div class="value" id="sMedium" style="color:var(--warning);">0</div></div>
-                <div class="stat-box" role="button" tabindex="0" onclick="openListPanel('alerts',this)"><div class="label">Alerts</div><div class="value" id="sAlerts" style="color:var(--danger);">0</div></div>
+                <div class="stat-box" role="button" tabindex="0" onclick="openListPanel('summary',this)"><div class="label" data-mobile="Blocks">Blocks</div><div class="value" id="sBlocks">0</div></div>
+                <div class="stat-box" role="button" tabindex="0" onclick="openListPanel('summary',this)"><div class="label" data-mobile="Txs">Transactions</div><div class="value" id="sTxs">0</div></div>
+                <div class="stat-box" role="button" tabindex="0" onclick="openListPanel('scored',this)"><div class="label" data-mobile="Scored">Scored</div><div class="value" id="sScored">0</div></div>
+                <div class="stat-box" role="button" tabindex="0" onclick="openListPanel('medium',this)"><div class="label" data-mobile="Medium">Medium Risk</div><div class="value" id="sMedium" style="color:var(--warning);">0</div></div>
+                <div class="stat-box" role="button" tabindex="0" onclick="openListPanel('alerts',this)"><div class="label" data-mobile="Alerts">Alerts</div><div class="value" id="sAlerts" style="color:var(--danger);">0</div></div>
             </div>
 
             <div class="feed" id="feed" role="log" aria-live="polite" aria-label="Live transaction feed">
@@ -1960,7 +2001,13 @@ HTML_TEMPLATE = """
         section.classList.toggle('open');
         if (section.classList.contains('open')) {
             const inp = document.getElementById('chatInput');
-            if (inp) inp.focus();
+            if (inp) {
+                inp.focus();
+                // On mobile, make sure the input is in view above the keyboard
+                setTimeout(function(){
+                    try { inp.scrollIntoView({block: 'center', behavior: 'smooth'}); } catch(e) {}
+                }, 350);
+            }
         }
     }
 
