@@ -1178,7 +1178,7 @@ HTML_TEMPLATE = """
         <div class="mc-context" id="mcContext">No address analysed yet</div>
 
         <!-- Empty-state: address picker shown when no analysis exists -->
-        <div class="mc-addr-picker" id="mcAddrPicker" style="display:none;">
+        <div class="mc-addr-picker" id="mcAddrPicker">
             <p class="mc-addr-blurb">Paste an Ethereum address and I'll analyse it, then answer your questions about it.</p>
             <input id="mcAddrInput" type="text" placeholder="0x… (Ethereum address)" autocomplete="off"
                    onkeydown="if(event.key==='Enter')mcAnalyseAndChat()">
