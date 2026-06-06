@@ -826,6 +826,8 @@ HTML_TEMPLATE = """
         <span class="divider"></span>
         <span>Faculty of Engineering</span>
         <span class="divider"></span>
+        <span>Sebastian Aquilina</span>
+        <span class="divider"></span>
         <button id="modeToggle" onclick="toggleScoringMode()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.3);border-radius:0.375rem;color:white;padding:0.35rem 0.75rem;cursor:pointer;font-size:0.85rem;display:flex;align-items:center;gap:0.4rem;transition:background 0.2s;" title="Switch between fixed and adaptive ensemble weighting">
             <span id="modeIcon">&#9878;</span> <span id="modeLabel">Fixed Weighting</span>
         </button>
@@ -939,7 +941,7 @@ HTML_TEMPLATE = """
             B.Eng. (Hons.) in Electrical &amp; Electronic Engineering<br>
             University of Malta &mdash; 2026
             <hr>
-            Supervised by <strong>Luana Chetcuti Zammit</strong>
+            Supervised by <strong>Dr. Luana Chetcuti Zammit</strong>
         </div>
     </div>
 
